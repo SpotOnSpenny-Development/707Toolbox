@@ -4,6 +4,7 @@ from numpy import number
 import requests
 import time
 import pandas #will need to install xlwt or xlsx when doing AWS
+import json
 
 def apy_calc(token_address):
     #Set datetime at time of running script
@@ -17,7 +18,7 @@ def apy_calc(token_address):
     json_data = response.json()
     historic_price = json_data["data"]["items"][0]["value"]
     number_of_pricepoints = len(json_data["data"]["items"])
-    current_price =json_data["data"]["items"][number_of_pricepoints - 1]["value"]
+    current_price =json_data["data"]["items"][number_of_pricepoints - 1]["value"] #TODO: fix for edge cases where token has not been listed for a week so that it does not error out
     ######print("The price of {} is currently {}, and was {} a week ago.".format(token_address, current_price, historic_price))######
     #Calculate APY for commodity based on https://learn.bybit.com/investing/what-is-apy-in-crypto/ (7 day APY for this example)
     apy7 = (((current_price - historic_price)/historic_price) * 365)/7
@@ -38,7 +39,7 @@ Fuck it. We Ball. Let's try it.
 def get_tradeable_tokens():
     #Create empty list to put tradeable tokens inside
     tradeable_tokens = []
-    #Request and define token list
+    #Request and define token list #TODO save this json with the current date as a reference
     url = 'https://raw.githubusercontent.com/solana-labs/token-list/main/src/tokens/solana.tokenlist.json'
     response = requests.get(url)
     token_list = response.json()
@@ -57,13 +58,19 @@ def get_tradeable_tokens():
             tradeable_tokens.append(token_address)
             print("Data found, {} is tradable".format(token_address))
         time.sleep(2)
+    #Create JSON of tradable tokens for easy bug fixing
+    json_token = json.dumps(tradeable_tokens)
+    json_file = open("TradeableTokens.json", "w") #TODO add date to json filename
+    json_file.write(json_token)
+    json_file.close
+    #Return list of tradeable tokens
     return tradeable_tokens
 
-def apy_dict(tradeable_tokens):
+def apy_dict(tradeable_tokens): #TODO if len of tokens in current json do not match json at time of last pull, tell user how off it is and suggest pulling a new one
     #Create empty list to store APY values
     all_apy = []
     #Iterate through tradeable tokens and add their APY to list
-    for token in tradeable_tokens:
+    for token in tradeable_tokens: #TODO Fix this so that it will pull from the tradeable_tokens.json
         token_apy = apy_calc(token)
         all_apy.append(token_apy)
         time.sleep(2)
@@ -76,5 +83,4 @@ def apy_dict(tradeable_tokens):
     print("APY data exported for {} tokens".format(number_of_tokens_parsed))
 
 if __name__ == "__main__":
-    tokens = get_tradeable_tokens()
-    apy_dict(tokens)
+    print(apy_calc("FYpdBuyAHSbdaAyD1sKkxyLWbAP8uUW9h6uvdhK74ij1"))
