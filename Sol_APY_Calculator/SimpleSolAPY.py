@@ -6,6 +6,7 @@ import time
 import pandas #will need to install xlwt or xlsx when doing AWS
 import json
 
+#Function will calculate the apy over 7 days for a given token address
 def apy_calc(token_address):
     #Set datetime at time of running script
     unix_current = int(datetime.now().timestamp())
@@ -18,24 +19,19 @@ def apy_calc(token_address):
     json_data = response.json()
     historic_price = json_data["data"]["items"][0]["value"]
     number_of_pricepoints = len(json_data["data"]["items"])
-    current_price =json_data["data"]["items"][number_of_pricepoints - 1]["value"] #TODO: fix for edge cases where token has not been listed for a week so that it does not error out
-    ######print("The price of {} is currently {}, and was {} a week ago.".format(token_address, current_price, historic_price))######
-    #Calculate APY for commodity based on https://learn.bybit.com/investing/what-is-apy-in-crypto/ (7 day APY for this example)
-    apy7 = (((current_price - historic_price)/historic_price) * 365)/7
-    print("The 7 day APY for commoddity {} is {}%".format(token_address, apy7))
-    return apy7
+    current_price =json_data["data"]["items"][number_of_pricepoints - 1]["value"]
+    #Catch error if token has not been listed long enough
+    if current_price or historic_price == None:
+        print("{} has not been listed long enough to calculate APY on specified timeframe.".format(token_address))
+        message = "Not enough data"
+        return message
+    #Calculate APY for commodity based on https://learn.bybit.com/investing/what-is-apy-in-crypto/ 
+    else:
+        apy7 = (((current_price - historic_price)/historic_price) * 365)/7
+        print("The 7 day APY for commoddity {} is {}%".format(token_address, apy7))
+        return apy7
 
-"""
-So, this is a super basic script to pull and calculate the APY of a token based on it's address on the SOL network.
-THAT SAID, if you wanted to get crazy extra, you can use the solana token list json (https://raw.githubusercontent.com/solana-labs/token-list/main/src/tokens/solana.tokenlist.json)
-to scrub the ENTIRE solana token library and look for tokens that are currently tradeable and calculate the APY for ALL of them.
-You could then create a list of this data to parse through it and look for the top x of them, or even just export it all in
-a JSON or spreadsheet to sort through the data however you want. I THINK all this would take is a simple for loop on the "Tokens"
-item on the link above but there's no way this is a quick run.
-
-Fuck it. We Ball. Let's try it.
-"""
-
+#Function to get all tradeable tokens on solana
 def get_tradeable_tokens():
     #Create empty list to put tradeable tokens inside
     tradeable_tokens = []
@@ -66,6 +62,7 @@ def get_tradeable_tokens():
     #Return list of tradeable tokens
     return tradeable_tokens
 
+#Function will create a dict of all given tokens and export as a formatted spreadsheet
 def apy_dict(tradeable_tokens): #TODO if len of tokens in current json do not match json at time of last pull, tell user how off it is and suggest pulling a new one
     #Create empty list to store APY values
     all_apy = []
