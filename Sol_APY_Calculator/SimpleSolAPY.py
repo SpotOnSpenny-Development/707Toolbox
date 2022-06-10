@@ -34,7 +34,7 @@ def apy_calc(token_address):
 def get_tradeable_tokens():
     #Set datetime at time of running for naming conventions
     today = date.today()
-    abbreviated_date = today.strftime("%b/%d/%Y")
+    abbreviated_date = today.strftime("%b_%d_%Y")
     abbreviated_time = datetime.now().strftime("%H:%M")
     abbreviated_datetime = "{}-{}".format(abbreviated_date, abbreviated_time)
     #Create empty list to put tradeable tokens inside
@@ -43,6 +43,15 @@ def get_tradeable_tokens():
     url = 'https://raw.githubusercontent.com/solana-labs/token-list/main/src/tokens/solana.tokenlist.json'
     response = requests.get(url)
     token_list = response.json()
+    #Save token list as JSON for future comparisons
+    all_tokens = []
+    for token in token_list["tokens"]:
+        all_tokens.append(token["address"])
+        print("{} added to all tokens JSON".format(token["address"]))
+    json_all_tokens = json.dumps(all_tokens)
+    all_tokens_file = open("./Data_And_Exports/All_Tokens/{}.json".format(abbreviated_datetime), "w")
+    all_tokens_file.write(json_all_tokens)
+    all_tokens_file.close
     #Iterate through token list and search for tradeable tokens
     for token in token_list["tokens"]:
         #Get token address from token list
@@ -70,7 +79,7 @@ def get_tradeable_tokens():
 def apy_dict(tradeable_tokens): #TODO if len of tokens in current json do not match json at time of last pull, tell user how off it is and suggest pulling a new one
     #Set datetime at time of running for file naming conventions
     today = date.today()
-    abbreviated_date = today.strftime("%b/%d/%Y")
+    abbreviated_date = today.strftime("%b_%d_%Y")
     abbreviated_time = datetime.now().strftime("%H:%M")
     abbreviated_datetime = "{}-{}".format(abbreviated_date, abbreviated_time)
     print(abbreviated_datetime)
@@ -91,4 +100,4 @@ def apy_dict(tradeable_tokens): #TODO if len of tokens in current json do not ma
 
 #if name statement for testing
 if __name__ == "__main__":
-    print("Nothing to test!")
+    print("Currently Testing: none")
