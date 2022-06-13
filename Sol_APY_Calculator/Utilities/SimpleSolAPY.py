@@ -69,7 +69,7 @@ def get_tradeable_tokens():
         time.sleep(2)
     #Create JSON of tradable tokens for easy bug fixing
     json_token = json.dumps(tradeable_tokens)
-    json_file = open("/Data_And_Exports/Tradeable_Tokens/{}.json".format(abbreviated_datetime), "w")
+    json_file = open("./Data_And_Exports/Tradeable_Tokens/{}.json".format(abbreviated_datetime), "w")
     json_file.write(json_token)
     json_file.close
     #Return list of tradeable tokens
@@ -94,7 +94,7 @@ def apy_dict(tradeable_tokens): #TODO if len of tokens in current json do not ma
     token_apy_dict = dict(zip(tradeable_tokens, all_apy))
     #Create spreadsheet from dictionary TODO: Create better spreadsheet format
     excel_dataframe = pandas.DataFrame.from_dict(token_apy_dict, orient = 'index', columns=["APY over 7 Days"])
-    excel_dataframe.to_excel('/Data_And_Exports/APYs/{}.xls')
+    excel_dataframe.to_excel('./Data_And_Exports/APYs/{}.xls')
     number_of_tokens_parsed = len(tradeable_tokens)
     print("APY data exported for {} tokens".format(number_of_tokens_parsed))
 
